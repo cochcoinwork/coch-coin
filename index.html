@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090b10">
+  <title>COCH COIN</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    *{box-sizing:border-box} body{margin:0;background:#090b10;color:#f4f5f7;font-family:Arial,sans-serif}
+    .wrap{max-width:480px;margin:auto;padding:22px 18px 34px}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+    .brand{font-size:22px;font-weight:900;letter-spacing:1px}.brand span{color:#f6c453}
+    .tag{font-size:11px;color:#aeb4c0;border:1px solid #303746;border-radius:20px;padding:7px 10px}
+    .balance{background:linear-gradient(135deg,#202633,#11151d);border:1px solid #343b49;border-radius:22px;padding:22px;text-align:center}
+    .muted{color:#9ba3b2;font-size:13px}.amount{font-size:42px;font-weight:800;margin:9px 0;color:#f6c453}
+    .coin{width:150px;height:150px;border-radius:50%;margin:24px auto 18px;background:radial-gradient(circle at 35% 30%,#ffe9a2,#d69a2e 58%,#815019);display:grid;place-items:center;box-shadow:0 0 45px #d69a2e33;cursor:pointer;user-select:none}
+    .coin span{font-size:50px;font-weight:900;color:#17120a;text-shadow:0 2px #fff5}
+    .coin:active{transform:scale(.96)}
+    .tap{font-size:14px;color:#b9bfca;text-align:center;margin-bottom:20px}
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .stat,.panel{background:#141923;border:1px solid #293140;border-radius:16px;padding:15px}
+    .stat strong{display:block;font-size:20px;margin-top:7px}
+    .panel{margin-top:14px}.panel h2{font-size:16px;margin:0 0 12px}
+    button{background:#f2bd4c;color:#17120a;border:0;border-radius:11px;padding:12px 14px;font-weight:800;cursor:pointer}
+    button:disabled{opacity:.45;cursor:not-allowed}.upgrade{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .mission{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid #293140;font-size:13px}
+    footer{text-align:center;color:#747d8d;font-size:11px;margin-top:20px;line-height:1.5}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header><div class="brand">COCH <span>COIN</span></div><div class="tag">DEMO • CHC</div></header>
+    <section class="balance">
+      <div class="muted">ТВОЇ COCH POINTS</div>
+      <div class="amount" id="points">0</div>
+      <div class="muted">Ігрові бали — не криптовалюта і не гроші</div>
+    </section>
+    <div class="coin" id="tap"><span>C</span></div>
+    <div class="tap">Натискай на монету, щоб отримувати бали</div>
+    <section class="stats">
+      <div class="stat"><div class="muted">⚡ Енергія</div><strong id="energy">100 / 100</strong></div>
+      <div class="stat"><div class="muted">🪙 За натискання</div><strong id="power">+1</strong></div>
+    </section>
+    <section class="panel">
+      <h2>COCH EXCHANGE</h2>
+      <div class="upgrade"><div><b>Покращити силу</b><div class="muted">Наступний рівень: +1 за тап</div><div class="muted" id="cost">Ціна: 50 балів</div></div><button id="upgrade">UPGRADE</button></div>
+    </section>
+    <section class="panel">
+      <h2>COCH MISSIONS</h2>
+      <div class="mission"><span>Зроби 20 натискань</span><b id="progress">0 / 20</b></div>
+      <div class="mission"><span>Нагорода</span><button id="claim">+25</button></div>
+    </section>
+    <footer>Навчальний прототип. Бали зберігаються лише у цьому браузері.<br>Немає виведення коштів, торгівлі чи обміну на токени.</footer>
+  </main>
+<script>
+  const tg = window.Telegram?.WebApp;
+  tg?.ready(); tg?.expand();
+  let state = JSON.parse(localStorage.getItem("coch-demo") || '{"points":0,"energy":100,"power":1,"taps":0,"claimed":false}');
+  const $ = id => document.getElementById(id);
+  function save(){localStorage.setItem("coch-demo",JSON.stringify(state));render()}
+  function render(){
+    $("points").textContent=state.points.toLocaleString("uk-UA");
+    $("energy").textContent=state.energy+" / 100"; $("power").textContent="+"+state.power;
+    $("cost").textContent="Ціна: "+(50*state.power)+" балів";
+    $("upgrade").disabled=state.points<50*state.power;
+    $("progress").textContent=Math.min(state.taps,20)+" / 20";
+    $("claim").disabled=state.taps<20||state.claimed;
+    $("claim").textContent=state.claimed?"ВИКОНАНО":"+25";
+  }
+  $("tap").onclick=()=>{if(state.energy<=0)return;state.points+=state.power;state.energy--;state.taps++;save()};
+  $("upgrade").onclick=()=>{let cost=50*state.power;if(state.points>=cost){state.points-=cost;state.power++;save()}};
+  $("claim").onclick=()=>{if(state.taps>=20&&!state.claimed){state.points+=25;state.claimed=true;save()}};
+  setInterval(()=>{if(state.energy<100){state.energy=Math.min(100,state.energy+1);save()}},3000);
+  render();
+</script>
+</body>
+</html>
